@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[40]:
+# In[1]:
 
 
 from pyspark.sql import SparkSession
 
 
-# In[41]:
+# In[2]:
 
 
 spark=SparkSession.builder.appName("RDD Trasformation & Actions").getOrCreate()
@@ -266,8 +266,120 @@ y = x.countByKey()
 print(y)
 
 
-# In[ ]:
+# In[14]:
 
 
+# Interoperating Between DataFrames, Datasets, and RDDs
+spark.range(10).rdd.glom().collect()
+spark.range(10).toDF("id").rdd.map(lambda row: row[0]).collect()
+spark.range(10).rdd.toDF().show()
 
+
+# In[15]:
+
+
+# Give name to RDD to monitor in Spark GUI
+myCollection = "Spark The Definitive Guide : Big Data Processing Made Simple".split(" ")
+words = spark.sparkContext.parallelize(myCollection, 2)
+words.setName("myWords")
+words.name()
+
+
+# In[23]:
+
+
+#This creates an RDD for which each record in the RDD represents a line in that text file or files.
+current_dir=os.getcwd()
+full_path=os.path.join(current_dir,'data','netflix_titles.csv')
+data=spark.sparkContext.textFile(full_path)
+data.take(2)
+
+
+# In[29]:
+
+
+#Alternatively, you can read in data for which each text file should become a single record. 
+spark.sparkContext.wholeTextFiles(full_path).take(1)
+
+
+# In[30]:
+
+
+#sort
+words.sortBy(lambda word: len(word) * -1).take(2)
+
+
+# In[31]:
+
+
+#reduce
+spark.sparkContext.parallelize(range(1, 5)).reduce(lambda x, y: x + y)
+
+
+# In[32]:
+
+
+#count
+words.count()
+
+
+# In[33]:
+
+
+#countapprox
+confidence = 0.95
+timeoutMilliseconds = 400
+words.countApprox(timeoutMilliseconds, confidence)
+
+
+# In[34]:
+
+
+#The same principles apply for caching RDDs as for DataFrames and Datasets.
+words.cache()
+#We can specify a storage level as any of the storage levels in the singleton object
+words.getStorageLevel()
+
+
+# In[35]:
+
+
+#Checkpointing
+#is the act of saving an RDD to disk so that future references to this RDD point to those
+#intermediate partitions on disk rather than recomputing the RDD from its original source. This is
+#similar to caching except that it’s not stored in memory, only disk
+spark.sparkContext.setCheckpointDir(current_dir)
+words.checkpoint()
+
+
+# In[44]:
+
+
+#mapPartitions - this means that we operate on a per-partition basis and allows us to perform an
+#operation on that entire partition
+words.glom().collect()
+words.mapPartitions(lambda part: [1]).glom().collect()
+
+
+# In[46]:
+
+
+#Other functions similar to mapPartitions include mapPartitionsWithIndex. With this you
+#specify a function that accepts an index (within the partition) and an iterator that goes through all
+#items within the partition.
+def indexedFunc(partitionIndex, withinPartIterator):
+    return ["partition: {} => {}".format(partitionIndex,
+x) for x in withinPartIterator]
+words.mapPartitionsWithIndex(indexedFunc).collect()
+
+
+# In[48]:
+
+
+#Although mapPartitions needs a return value to work properly, this next function does not.
+#foreachPartition simply iterates over all the partitions of the data.
+def f(iterator):
+    for x in iterator:
+         print(x)
+words.foreachPartition(f)
 

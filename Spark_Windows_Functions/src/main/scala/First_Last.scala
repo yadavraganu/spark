@@ -25,8 +25,8 @@ object First_Last {
       StructField("Hire_Date",DateType,false)))
     val df=spark.createDataFrame(input).toDF("Emp_Id","Dept_Id","Hire_Date").withColumn("Hire_Date",to_date(col("Hire_Date"),"dd-MMM-yyyy"))
     val window_spec=Window.partitionBy("Dept_Id").orderBy(col("Hire_Date").desc)
-    val df2 = df.withColumn("First_Value",first("Hire_Date").over(window_spec))
-    val df3 = df2.withColumn("Last_Value",last("Hire_Date").over(window_spec))
+    val df2 = df.withColumn("First",first("Hire_Date").over(window_spec))
+    val df3 = df2.withColumn("Last",last("Hire_Date").over(window_spec))
     df3.show()
   }
 }

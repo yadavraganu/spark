@@ -1,8 +1,9 @@
 from pyspark.sql.session import SparkSession
 from pyspark.sql.types import StructType, StructField, IntegerType
 from pyspark.sql.functions import json_tuple, schema_of_json
-from config_parse import get_config
-import os
+import sys
+sys.path.append('..')
+from config.config_parse import get_config
 
 # Spark Session
 spark = SparkSession.builder.master("local[3]").appName('json_function').getOrCreate()

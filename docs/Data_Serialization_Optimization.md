@@ -25,6 +25,7 @@ We then load the RDD from disk using Kryo serialization and print the loaded RDD
 Kryo serialization is significantly faster and more compact than Java serialization.
 However, it does not support all Serializable types and requires you to register the classes you will use in the program in advance for best performance.
 
+```
 class Person(object):
     def __init__(self, name, age):
         self.name = name
@@ -35,22 +36,11 @@ conf.setAppName("kyroExample")
 conf.setMaster("local[*]")
 conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
 conf.set("spark.kryo.registrationRequired", "true")
-
-#register custom classes
 conf.registerKryoClasses([Person])
-
-#create Spark context
 sc = SparkContext(conf=conf)
-
-#create an RDD of Person objects
 people = sc.parallelize([Person("John", 30), Person("Mary", 25)])
-
-#save the RDD to disk using Kryo serialization
 people.saveAsObjectFile("people.kryo")
-
-#load the RDD from disk using Kryo serialization
 loadedPeople = sc.objectFile("people.kryo")
-
-#print the loaded RDD
 for person in loadedPeople.collect():
-    print(person.name, person.age)
+    print(person.name, person.age) <code>
+```

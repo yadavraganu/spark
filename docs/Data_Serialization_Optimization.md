@@ -10,7 +10,7 @@ You can also control the performance of your serialization more closely by exten
 
 - __Kryo serialization:__ Spark can also use the Kryo library (version 4) to serialize objects more quickly.Kryo is significantly faster and more compact than Java serialization (often as much as 10x), but does not support all Serializable types and requires you to register the classes you’ll use in the program in advance for best performance.
 You can switch to using Kryo by initializing your job with a SparkConf and calling 
-conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+`conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")`
 This setting configures the serializer used for not only shuffling data between worker nodes but also when serializing RDDs to disk.
 The only reason Kryo is not the default is because of the custom registration requirement, but we recommend trying it in any network-intensive application.
 Since Spark 2.0.0, we internally use Kryo serializer when shuffling RDDs with simple types, arrays of simple types, or string type.

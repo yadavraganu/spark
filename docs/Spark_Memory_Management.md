@@ -23,7 +23,7 @@ Spark makes completely no accounting on what you do there and whether you respec
 
 
 # spark.driver.memoryOverhead	
-Default Value : driverMemory * spark.driver.memoryOverheadFactor, with minimum of 384  	
+Default Value : driverMemory * spark.driver.memoryOverheadFactor, with minimum of 384   	
 Amount of non-heap memory to be allocated per driver process in cluster mode, in MiB unless otherwise specified.  
 This is memory that accounts for things like VM overheads, interned strings, other native overheads, etc.  
 This tends to grow with the container size (typically 6-10% of driver memory). This option is currently supported on YARN, Mesos and Kubernetes.  
@@ -32,7 +32,7 @@ and memory used by other non-driver processes running in the same container.
 The maximum memory size of container to running driver is determined by the sum of spark.driver.memoryOverhead and spark.driver.memory.
 
 # spark.driver.memoryOverheadFactor	
-Default Value : 0.10  	
+Default Value : 0.10   	
 Fraction of driver memory to be allocated as additional non-heap memory per driver process in cluster mode. This is memory that accounts for things like VM overheads, interned strings, other native overheads, etc.  
 This tends to grow with the container size. This value defaults to 0.10 except for Kubernetes non-JVM jobs, which defaults to 0.40. This is done as non-JVM tasks need more non-JVM heap space and such tasks commonly fail with "Memory Overhead Exceeded" errors.  
 This preempts this error with a higher default. This value is ignored if spark.driver.memoryOverhead is set directly.

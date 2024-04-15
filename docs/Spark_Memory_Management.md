@@ -16,7 +16,7 @@ This is the User Memory and its completely up to you what would be stored in thi
 Spark makes completely no accounting on what you do there and whether you respect this boundary or not. Not respecting this boundary in your code might cause OOM error.
 
 # Executer Memory Overview
-![img.png](Executor_Memory.png)
+![img.png](images/Executor_Memory.png)
 
 
 

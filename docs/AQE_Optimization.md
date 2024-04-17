@@ -6,17 +6,7 @@ As of Spark 3.0, there are three major features in AQE: including
 - Converting sort-merge join to broadcast join
 - Skew join optimization
 
-## Spliting skewed shuffle partitions 
 
-### spark.sql.adaptive.rebalancePartitionsSmallPartitionFactor	
-Default Value : 0.2  
-A partition will be merged during splitting if its size is smaller than this factor multiply spark.sql.adaptive.advisoryPartitionSizeInBytes.
-
-### spark.sql.adaptive.optimizeSkewsInRebalancePartitions.enabled	
-Default Value : true	
-When true and spark.sql.adaptive.enabled is true, Spark will optimize the skewed shuffle partitions in RebalancePartitions  
-and split them to smaller ones according to the target size (specified by spark.sql.adaptive.advisoryPartitionSizeInBytes),  
-to avoid data skew.
 
 ## Converting sort-merge join to broadcast join
 AQE converts sort-merge join to broadcast hash join when the runtime statistics of any join side is smaller than the adaptive broadcast hash join threshold.  

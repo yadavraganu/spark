@@ -7,7 +7,7 @@ In scenarios in which a small data set is being joined with a larger data set, S
 If one of the data sets is small enough to fit into the memory of each worker node, it can be sent to all nodes, reducing the need for costly shuffle operations.
 The join() operation simply happens locally on each node.   
 
-In the following example, the small DataFrame df2 is broadcast across all of the worker nodes, and the join() operation with the large DataFrame df1 is performed locally on each node:  
+In the following example, the small DataFrame df2 is broadcast across all the worker nodes, and the join() operation with the large DataFrame df1 is performed locally on each node:  
 
 ```
 from pyspark.sql.functions import broadcast

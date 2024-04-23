@@ -35,3 +35,31 @@ To optimize cost, run it less often.
 # What’s the best instance type to run OPTIMIZE (bin-packing and Z-Ordering) on?
 Both operations are CPU intensive operations doing large amounts of Parquet decoding and encoding.
 Databricks recommends Compute optimized instance types. OPTIMIZE also benefits from attached SSDs.
+
+# Auto Compaction/Optimize
+Auto compaction combines small files within Delta table partitions to automatically reduce small file problems.  
+Auto compaction occurs after a write to a table has succeeded and runs synchronously on the cluster that has  
+performed the write. Auto compaction only compacts files that haven’t been compacted previously.  
+
+- You can control the output file size by setting the Spark configuration 
+`spark.databricks.delta.autoCompact.maxFileSize`
+- Auto compaction is only triggered for partitions or tables that have at least a certain number of small files.
+  You can optionally change the minimum number of files required to trigger auto compaction by setting 
+  `spark.databricks.delta.autoCompact.minNumFiles`
+- Auto compaction can be enabled at the table or session level using the following settings:
+  ```
+  Table property: delta.autoOptimize.autoCompact
+  SparkSession setting: spark.databricks.delta.autoCompact.enabled
+  
+  Below are possible values ->
+  
+  auto (recommended) :Tunes target file size while respecting other autotuning functionality.
+  Requires Databricks Runtime 10.4 LTS or above.
+  
+  legacy : Alias for true. Requires Databricks Runtime 10.4 LTS or above.
+  
+  true : Use 128 MB as the target file size. No dynamic sizing
+  
+  false : Turns off auto compaction. Can be set at the session level to override auto compaction
+  for all Delta tables modified in the workload.
+```

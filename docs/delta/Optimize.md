@@ -18,7 +18,7 @@ deltaTable.optimize().where("date='2021-11-18'").executeCompaction()
 ```
 Notes :
 - Bin-packing optimization is idempotent, meaning that if it is run twice on the same dataset, the second run has no effect.
-- Bin-packing aims to produce evenly-balanced data files with respect to their size on disk, but not necessarily  
+- Bin-packing aims to produce evenly balanced data files with respect to their size on disk, but not necessarily the
   number of tuples per file. However, the two measures are most often correlated.
 - Readers of Delta tables use snapshot isolation, which means that they are not interrupted when OPTIMIZE  
   removes unnecessary files from the transaction log. OPTIMIZE makes no data related changes to the table,  

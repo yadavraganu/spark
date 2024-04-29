@@ -18,7 +18,7 @@ is done for the number of coalesced shuffle partitions. In case if the estimated
 by “spark.sql.shuffle.partitions”, ‘Dynamic Coalescing’ module inserts dynamically, at runtime, a subsequent coalesce  
 transformation having input parameter as the estimated number of coalesced shuffle partitions.
 
-![img.png](images/aqe_post_Shuffle.png)
+![img.png](../images/aqe_post_Shuffle.png)
 
 
 ## Parameters

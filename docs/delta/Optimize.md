@@ -47,19 +47,33 @@ performed the write. Auto compaction only compacts files that haven’t been com
   You can optionally change the minimum number of files required to trigger auto compaction by setting 
   `spark.databricks.delta.autoCompact.minNumFiles`
 - Auto compaction can be enabled at the table or session level using the following settings:
-  ```
-  Table property: delta.autoOptimize.autoCompact
-  SparkSession setting: spark.databricks.delta.autoCompact.enabled
+```
+Table property: delta.autoOptimize.autoCompact
+SparkSession setting: spark.databricks.delta.autoCompact.enabled
   
-  Below are possible values ->
+Below are possible values ->
   
-  auto (recommended) :Tunes target file size while respecting other autotuning functionality.
-  Requires Databricks Runtime 10.4 LTS or above.
-  
-  legacy : Alias for true. Requires Databricks Runtime 10.4 LTS or above.
-  
-  true : Use 128 MB as the target file size. No dynamic sizing
-  
-  false : Turns off auto compaction. Can be set at the session level to override auto compaction
-  for all Delta tables modified in the workload.
+auto (recommended) :Tunes target file size while respecting other autotuning functionality.
+Requires Databricks Runtime 10.4 LTS or above.
+legacy : Alias for true. Requires Databricks Runtime 10.4 LTS or above. 
+true : Use 128 MB as the target file size. No dynamic sizing
+false : Turns off auto compaction. Can be set at the session level to override auto compaction
+for all Delta tables modified in the workload.
+```
+# Optimized writes
+Optimized writes improve file size as data is written and benefit subsequent reads on the table.
+Optimized writes are most effective for partitioned tables, as they reduce the number of small files written to each  
+partition. Writing fewer large files is more efficient than writing many small files, but you might still see an  
+increase in write latency because data is shuffled before being written.
+
+Optimized writes can be enabled at the table or session level using the following settings:
+```
+Table setting: delta.autoOptimize.optimizeWrite
+SparkSession setting: spark.databricks.delta.optimizeWrite.enabled
+
+Below are possible values ->
+
+true: Use 128 MB as the target file size.
+false:Turns off optimized writes. It Can be set at the session level to override auto compaction for all Delta tables  
+modified in the workload.
 ```

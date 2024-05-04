@@ -6,7 +6,7 @@ df.select(df.age.alias("age2")).collect()
 df.select(df.age.alias("age3", metadata={'max': 99})).schema['age3'].metadata['max']
 ```
 ### pyspark.sql.Column.cast
-Casts the column into type dataType  
+Cast the column into type dataType  
 Alias: pyspark.sql.Column.astype
 ```
 from pyspark.sql.types import StringType

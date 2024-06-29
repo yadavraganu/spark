@@ -39,3 +39,45 @@ a cost model.
 __Execution__  
 
 Upon selecting a physical plan, Spark runs all of this code over RDDs, the lower-level programming interface of Spark. Spark performs further optimizations at runtime, generating native Java bytecode that can remove entire tasks or stages during execution
+
+# Chapter 5
+Partitioning of the DataFrame defines the layout of the DataFrame or Dataset’s physical distribution across the cluster. The partitioning scheme defines how that is allocated. You can set this to be based on values in a certain column or nondeterministically. 
+
+__Printing Schema__  
+`df.printSchema()`
+
+### Schemas
+A schema defines the column names and types of a DataFrame. We can either let a data source define the schema (called schema-on-read) or we can define it explicitly ourselves. A schema is a StructType made up of a number of fields, StructFields, that have a name,
+type, a Boolean flag which specifies whether that column can contain missing or null values, and, finally, users can optionally specify associated metadata with that column.  
+If the types in the data (at runtime) do not match the schema, Spark will throw an error
+
+__Getting Schema In Struct Format__  
+```spark.read.format("json").load("/data/flight-data/json/2015-summary.json").schema
+
+Python returns the following:
+
+StructType(List(StructField(DEST_COUNTRY_NAME,StringType,true),
+StructField(ORIGIN_COUNTRY_NAME,StringType,true),
+StructField(count,LongType,true)))
+```
+__Defining Schema Manually__
+```
+# in Python
+from pyspark.sql.types import StructField, StructType, StringType, LongType
+
+myManualSchema = StructType([
+StructField("DEST_COUNTRY_NAME", StringType(), True),
+StructField("ORIGIN_COUNTRY_NAME", StringType(), True),
+StructField("count", LongType(), False, metadata={"hello":"world"})
+])
+
+df = spark.read.format("json").schema(myManualSchema).load("/data/flight-data/json/2015-summary.json")
+```
+### Columns
+There are a lot of different ways to construct and refer to columns but the two simplest ways are by using the col or column functions. To use either of these functions, you pass in a column name  
+Columns are not resolved until we compare the column names with those we are maintaining in the catalog. Column and table resolution happens in the analyzer phase
+```
+from pyspark.sql.functions import col, column
+col("someColumnName")
+column("someColumnName")
+```

@@ -75,9 +75,26 @@ df = spark.read.format("json").schema(myManualSchema).load("/data/flight-data/js
 ```
 ### Columns
 There are a lot of different ways to construct and refer to columns but the two simplest ways are by using the col or column functions. To use either of these functions, you pass in a column name  
-Columns are not resolved until we compare the column names with those we are maintaining in the catalog. Column and table resolution happens in the analyzer phase
+Columns are not resolved until we compare the column names with those we are maintaining in the catalog. Column and table resolution happens in the analyzer phase.  
+
+One thing that you might come across is reserved characters like spaces or dashes in column names. Handling these means escaping column names appropriately. In Spark, we do this by using backtick (\`) characters  
+
+__Dont need back tick__  
+`dfWithLongColName = df.withColumn("This Long Column-Name",expr("ORIGIN_COUNTRY_NAME"))`  
+__Need back tick__  
+`dfWithLongColName.selectExpr("`This Long Column-Name`","`This Long Column-Name` as `new col`").show(2)`  
 ```
 from pyspark.sql.functions import col, column
 col("someColumnName")
 column("someColumnName")
+```
+- Adding Columns  
+```
+df.withColumn("numberOne", lit(1)).show(2)
+df.withColumn("withinCountry", expr("ORIGIN_COUNTRY_NAME == DEST_COUNTRY_NAME")).show(2)
+df.withColumn("Destination", expr("DEST_COUNTRY_NAME"))
+```
+- Renaming Columns  
+```
+df.withColumnRenamed("DEST_COUNTRY_NAME", "dest")
 ```

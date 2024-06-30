@@ -76,18 +76,35 @@ df = spark.read.format("json").schema(myManualSchema).load("/data/flight-data/js
 ### Columns
 There are a lot of different ways to construct and refer to columns but the two simplest ways are by using the col or column functions. To use either of these functions, you pass in a column name  
 Columns are not resolved until we compare the column names with those we are maintaining in the catalog. Column and table resolution happens in the analyzer phase.  
-
-One thing that you might come across is reserved characters like spaces or dashes in column names. Handling these means escaping column names appropriately. In Spark, we do this by using backtick (\`) characters  
-
-__Dont need back tick__  
-`dfWithLongColName = df.withColumn("This Long Column-Name",expr("ORIGIN_COUNTRY_NAME"))`  
-__Need back tick__  
-`dfWithLongColName.selectExpr("`This Long Column-Name`","`This Long Column-Name` as `new col`").show(2)`  
 ```
 from pyspark.sql.functions import col, column
 col("someColumnName")
 column("someColumnName")
 ```
+#### Columns as expressions
+When using an expression, the expr function can actually parse transformations and column references from a string and can subsequently be passed into further transformations. Let’s look at some
+examples.  
+`expr("someCol - 5")` is the same transformation as performing `col("someCol") - 5`, or even `expr("someCol") - 5`.  
+
+#### Accessing a DataFrame’s columns
+`spark.read.format("json").load("/data/flight-data/json/2015-summary.json").columns`  
+
+One thing that you might come across is reserved characters like spaces or dashes in column names. Handling these means escaping column names appropriately. In Spark, we do this by using backtick (\`) characters  
+
+- Dont need back tick  
+
+`dfWithLongColName = df.withColumn("This Long Column-Name",expr("ORIGIN_COUNTRY_NAME"))` 
+
+- Need back tick
+
+```dfWithLongColName.selectExpr("`This Long Column-Name`","`This Long Column-Name` as `new col`").show(2)```  
+### Creating Rows
+You can create rows by manually instantiating a Row object with the values that belong in each column
+```
+from pyspark.sql import Row
+myRow = Row("Hello", None, 1, False)
+```
+### DataFrame Transformations
 - Adding Columns  
 ```
 df.withColumn("numberOne", lit(1)).show(2)

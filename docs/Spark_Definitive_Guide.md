@@ -105,6 +105,28 @@ from pyspark.sql import Row
 myRow = Row("Hello", None, 1, False)
 ```
 ### DataFrame Transformations
+- Creating DataFrame
+```
+from pyspark.sql import Row
+from pyspark.sql.types import StructField, StructType, StringType, LongType
+myManualSchema = StructType([
+StructField("some", StringType(), True),
+StructField("col", StringType(), True),
+StructField("names", LongType(), False)
+])
+myRow = Row("Hello", None, 1)
+myDf = spark.createDataFrame([myRow], myManualSchema)
+myDf.show()
+```
+- Select & SelectExpr
+```
+df.select("DEST_COUNTRY_NAME", "ORIGIN_COUNTRY_NAME").show(2)
+df.select(expr("DEST_COUNTRY_NAME"),col("DEST_COUNTRY_NAME"),column("DEST_COUNTRY_NAME")).show(2)
+df.select(expr("DEST_COUNTRY_NAME AS destination")).show(2)
+df.selectExpr("DEST_COUNTRY_NAME as newColumnName", "DEST_COUNTRY_NAME").show(2)
+df.selectExpr("*", "(DEST_COUNTRY_NAME = ORIGIN_COUNTRY_NAME) as withinCountry").show(2)
+df.selectExpr("avg(count)", "count(distinct(DEST_COUNTRY_NAME))").show(2)
+```
 - Adding Columns  
 ```
 df.withColumn("numberOne", lit(1)).show(2)
@@ -132,3 +154,78 @@ df.filter(col("count") < 2).show(2)
 df.where("count < 2").show(2)
 df.where(col("count") < 2).where(col("ORIGIN_COUNTRY_NAME") != "Croatia").show(2)
 ```
+- Case Sensitivity
+By default Spark is case insensitive; however, you can make Spark case sensitive by setting the configuration:
+```
+set spark.sql.caseSensitive true
+```
+- Converting to Spark Types (Literals)
+```
+df.select(expr("*"), lit(1).alias("One")).show(2)
+```
+- Getting Unique Rows
+```
+df.select("ORIGIN_COUNTRY_NAME", "DEST_COUNTRY_NAME").distinct().count()
+df.select("ORIGIN_COUNTRY_NAME").distinct().count()
+```
+- Random Samples
+```
+seed = 5
+withReplacement = False
+fraction = 0.5
+df.sample(withReplacement, fraction, seed).count()
+```
+- Random Splits
+```
+dataFrames = df.randomSplit([0.25, 0.75], seed)
+```
+- Concatenating and Appending Rows (Union)
+```
+from pyspark.sql import Row
+schema = df.schema
+newRows = [
+Row("New Country", "Other Country", 5L),
+Row("New Country 2", "Other Country 3", 1L)
+]
+
+parallelizedRows = spark.sparkContext.parallelize(newRows)
+newDF = spark.createDataFrame(parallelizedRows, schema)
+
+df.union(newDF).where("count = 1").where(col("ORIGIN_COUNTRY_NAME") != "United States").show()
+
+```
+- Sorting Rows
+```
+df.sort("count").show(5)
+df.orderBy("count", "DEST_COUNTRY_NAME").show(5)
+df.orderBy(col("count"), col("DEST_COUNTRY_NAME")).show(5)
+from pyspark.sql.functions import desc, asc
+df.orderBy(expr("count desc")).show(2)
+df.orderBy(col("count").desc(), col("DEST_COUNTRY_NAME").asc()).show(2)
+```
+For optimization purposes, it’s sometimes advisable to sort within each partition before another set of transformations. You can use the sortWithinPartitions method to do this.  
+
+`spark.read.format("json").load("/data/flight-data/json/*-summary.json").sortWithinPartitions("count")`
+
+- Limit  
+```df.limit(5).show()
+```
+
+- Repartition and Coalesce  
+Repartition will incur a full shuffle of the data, regardless of whether one is necessary. This means that you should typically only repartition when the future number of partitions is greater than your current number of partitions or when you are looking to partition by a set of columns
+Coalesce, on the other hand, will not incur a full shuffle and will try to combine partitions. This operation will shuffle your data into five partitions based on the destination country name, and then coalesce them (without a full shuffle)
+```
+df.repartition(5)
+df.repartition(5, col("DEST_COUNTRY_NAME"))
+df.repartition(5, col("DEST_COUNTRY_NAME")).coalesce(2)
+```
+- Collecting Rows to the Driver
+```
+collectDF = df.limit(10)
+collectDF.take(5) # take works with an Integer count
+collectDF.show() # this prints it out nicely
+collectDF.show(5, False)
+collectDF.collect()
+```
+
+There’s an additional way of collecting rows to the driver in order to iterate over the entire dataset. The method toLocalIterator collects partitions to the driver as an iterator. This method allows you to iterate over the entire dataset partition-by-partition in a serial manner

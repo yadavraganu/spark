@@ -208,7 +208,8 @@ For optimization purposes, it’s sometimes advisable to sort within each partit
 `spark.read.format("json").load("/data/flight-data/json/*-summary.json").sortWithinPartitions("count")`
 
 - Limit  
-```df.limit(5).show()
+```
+df.limit(5).show()
 ```
 
 - Repartition and Coalesce  

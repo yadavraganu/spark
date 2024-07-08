@@ -38,3 +38,43 @@ While using .where() for reading data can be very effective, you can also use .w
 2. You can partition by a column if you expect data in that partition to be at least 1 GB. Tables with fewer, larger partitions tend to outperform tables with many smaller partitions, otherwise you run into the small file problem
 # Compact Files
 When performing DML operations on a Delta table, often new data is written in many small files across partitions. Due to the additional volume of file metadata and the total number of data files that need to be read, queries and operation speed can be reduced
+### Compaction
+The consolidation of files is called compaction, or bin-packing. To perform compaction using your own specifications, for example, specifying the number of files to compact the Delta table into, you can use a DataFrame writer with dataChange = false. This indicates that the operation does not change the data; it simply rearranges the data layout
+```
+# define the path and number of files to repartition
+path = "/mnt/datalake/book/chapter05/YellowTaxisDelta"
+numberOfFiles = 5
+# read the Delta table and repartition it
+spark.read \
+ .format("delta") \
+ .load(path) \
+ .repartition(numberOfFiles) \
+ .write \
+ .option("dataChange", "false") \
+ .format("delta") \
+ .mode("overwrite") \
+ .save(path)
+```
+### OPTIMIZE
+The OPTIMIZE command aims to remove unnecessary files from the transaction log while also producing evenly balanced data files in terms of file size. The smaller files are compacted into new, larger files up to 1 GB. Unlike compaction achieved through the repartition method, there is no need to specify the dataChange option.
+
+OPTIMIZE uses snapshot isolation when performing the command so concurrent operations and downstream streaming consumers remain uninterrupted.
+
+Let’s walk through an example of OPTIMIZE to repartition the existing table into 1,000 files to simulate a scenario where we consistently insert data into a table.
+```
+%sql
+OPTIMIZE taxidb.YellowTaxis
+```
+After running the OPTIMIZE command on the table, we can see that 1,000 files were removed and 9 files were added.
+It is important to note that the 1,000 files that were removed were not physically removed from the underlying storage rather, they were only logically removed from the transaction log. These files will be physically removed from the underlying storage next time you run VACUUM
+
+Optimization using OPTIMIZE is also idempotent, meaning that if it is run twice on the same table or subset of data, the second run has no effect.We can also optimize on specific subsets of data rather than optimizing the entire
+table. This can be useful when we are only performing DML operations on a specific partition
+```
+%sql
+OPTIMIZE taxidb.YellowTaxis WHERE PickupMonth = 12
+```
+### OPTIMIZE Considerations
+1. The OPTIMIZE command is effective for tables, or table partitions, that you write data continuously to and thus contain large amounts of small files
+2. The OPTIMIZE command is not effective for tables with static data or tables where data is rarely updated because there are few small files to coalesce into larger files
+3. The OPTIMIZE command can be a resource-intensive operation that takes time to execute. You can incur costs from your cloud provider while running your compute engine to perform the operation

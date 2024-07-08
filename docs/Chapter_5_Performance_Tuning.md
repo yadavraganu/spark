@@ -36,3 +36,5 @@ While using .where() for reading data can be very effective, you can also use .w
 ### Partitioning Warnings and Considerations
 1. Select your partition column(s) carefully. If the cardinality of a column is very high, do not use that column for partitioning. High cardinality columns are great for Z-ordering, but not partitioning, because it can lead to the same small file problem
 2. You can partition by a column if you expect data in that partition to be at least 1 GB. Tables with fewer, larger partitions tend to outperform tables with many smaller partitions, otherwise you run into the small file problem
+# Compact Files
+When performing DML operations on a Delta table, often new data is written in many small files across partitions. Due to the additional volume of file metadata and the total number of data files that need to be read, queries and operation speed can be reduced

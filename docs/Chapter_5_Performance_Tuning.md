@@ -78,3 +78,21 @@ OPTIMIZE taxidb.YellowTaxis WHERE PickupMonth = 12
 1. The OPTIMIZE command is effective for tables, or table partitions, that you write data continuously to and thus contain large amounts of small files
 2. The OPTIMIZE command is not effective for tables with static data or tables where data is rarely updated because there are few small files to coalesce into larger files
 3. The OPTIMIZE command can be a resource-intensive operation that takes time to execute. You can incur costs from your cloud provider while running your compute engine to perform the operation
+
+# ZORDER BY
+While OPTIMIZE aims to consolidate files, Z-ordering allows us to read the data in those files more efficiently by optimizing the data layout.Specifically, this technique clusters and colocates related information in the same set of files to allow for faster data retrieval.Z-order indexes can improve the performance of queries that filter on the specified
+Z-order columns. Performance is improved because it allows queries to more efficiently locate the relevant rows, and it also allows joins to more efficiently locate rows with matching values. This efficiency can ultimately be attributed to the reduction in the amount of data that needs to be read during queries.
+We can apply ZORDER BY with the OPTIMIZE command to consolidate files and effectively order the data in those files.
+```
+%sql
+OPTIMIZE taxidb.tripData ZORDER BY PickupDate
+
+OPTIMIZE taxidb.tripData ZORDER BY PickupDate, VendorId
+WHERE PickupMonth = 2022
+```
+### ZORDER BY Considerations
+- You can specify multiple columns for ZORDER BY as a comma-separated list in the command. However, the effectiveness of the locality drops with each additional column
+- Similar to OPTIMIZE, you can apply Z-ordering to specific subsets of data, such as partitions, rather than applying it to the entire table
+- You cannot use ZORDER BY on fields used for partitioning.
+- Z-order clustering can only occur within a partition.
+- For unpartitioned tables, files can be combined across the entire table.

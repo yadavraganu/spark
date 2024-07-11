@@ -96,3 +96,51 @@ WHERE PickupMonth = 2022
 - You cannot use ZORDER BY on fields used for partitioning.
 - Z-order clustering can only occur within a partition.
 - For unpartitioned tables, files can be combined across the entire table.
+
+Unlike OPTIMIZE, Z-ordering is not idempotent but aims to be an incremental operation. The time it takes for Z-ordering is not guaranteed to reduce over multiple runs. However, if no new data was added to a partition that was just Z-ordered, another Z-ordering of that partition will not have any effect
+# Liquid Clustering
+While some of the performance tuning techniques mentioned above aim to optimize data layouts and thus improve read and write performance, thereare some shortcomings:
+### Partitioning
+Partitions run the risk of introducing the small file problem, where data is stored across many different small files, which inevitably results in poor performance. And once a table is partitioned, this partition cannot be changed and can cause challenges for new use cases or new query patterns. While Delta Lake supports partitioning, there are challenges with partition evolution, as partitioning is considered a fixed data layout.
+### ZORDER BY
+Anytime data is inserted, updated, or deleted on a table, OPTIMIZE ZORDER BY must be run again for optimization. And when ZORDER BY is applied again, the user must remember the columns used in the expression. This is because the columns used in ZORDER BY are not persisted and can cause errors or challenges when attempting to apply it again. Since OPTIMIZE ZORDER BY is not idempotent, this will result in reclustering data when it is run
+Many of the shortcomings with partitioning and Z-ordering can be addressed through Delta Lake’s liquid clustering feature. The following scenarios for Delta tables benefit greatly from liquid clustering
+- Tables often filtered by high cardinality columns
+- Tables with substantial skew in data distribution
+- Tables that require large amounts of tuning and maintenance
+- Tables with concurrent write requirements
+- Tables with partition patterns that change over time
+Delta Lake’s liquid clustering feature aims to address limitations found with partitioning and Z-ordering, and revamp both read and write performance through a more dynamic data layout. Ultimately, liquid clustering helps reduce performance tuning overhead while also supporting efficient query access.
+### Enabling Liquid Clustering
+You must specify liquid clustering using the CLUSTER BY command when you create the table; you cannot add clustering to an existing table (e.g., using ALTER TABLE) that does not have liquid clustering enabled.
+It is important to note that only a few operations automatically cluster data on write when writing data to a table with liquid clustering. The following operations support automatically clustering data on write, provided the size of the data being inserted does not exceed 512 GB:
+- INSERT INTO
+- CREATE TABLE AS SELECT (CTAS) statements
+- COPY INTO
+- Write appends such as spark.write.format("delta").mode("append")
+
+Since only these specific operations support clustering data on write, you should trigger clustering on a regular basis by running OPTIMIZE. Running this command frequently will ensure that data is properly clustered.
+It is also worth noting that liquid clustering is incremental when triggered by OPTIMIZE, meaning that only the necessary data is rewritten to accommodate data that needs to be clustered
+
+### Operations on Clustered Columns
+- __Operations on Clustered Columns__ :While you must specify how a table is clustered when it is initially created, you can still change the columns used for clustering on the table using ALTER TABLE and CLUSTER BY.You can specify up to four columns as clustering keys.
+```
+%sql
+ALTER TABLE taxidb.tripDataClustered CLUSTER BY (VendorId, RateCodeId);
+```
+- __Viewing clustered columns__:
+```
+%sql
+DESCRIBE TABLE taxidb.tripDataClustered;
+```
+- __Removing clustered columns__:
+```
+%sql
+ALTER TABLE taxidb.tripDataClustered CLUSTER BY NONE;
+```
+### Liquid Clustering Warnings and Considerations
+
+- You must enable Delta Lake liquid clustering when first creating a table. You cannot alter an existing table to add clustering without clustering being enabled when the table is first created.
+- You can only specify columns with statistics collected for clustered columns. Remember, only the first 32 columns in a Delta table have statistics collected bydefault.
+- Structured Streaming workloads do not support clustering-on-write.
+- Run OPTIMIZE frequently to ensure new data is clustered.

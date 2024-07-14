@@ -1,17 +1,42 @@
 version : '3.8'
 services: 
     spark-master :
-        container_name: spark-master-node 
+        container_name: spark-master-node
+        hostname: spark-master         
         build:
             context : .
             dockerfile : master.Dockerfile
         ports:
             - 8080:8080
             - 7077:7077
-        environments:
-            - ENV SPARK_LOCAL_IP=spark-master         
-    spark-worker :
-        container_name: spark-worker-node-1  
+        environment:
+            - SPARK_LOCAL_IP=spark-master
+            - SPARK_MASTER_HOST=spark-master
+            - SPARK_MASTER_PORT=7077
+            - SPARK_MASTER_WEBUI_PORT=8080
+    spark-worker-1 :
+        container_name: spark-worker-node-1
+        hostname: spark-worker-1
         build:
             context : .
-            dockerfile : worker.Dockerfile  
+            dockerfile : worker.Dockerfile 
+        environment:
+            - SPARK_LOCAL_IP=spark-worker-1
+            - SPARK_WORKER_WEBUI_PORT=8081
+        ports:
+            - 8081:8081   
+        depends_on:
+            - spark-master
+    spark-worker-2 :
+        container_name: spark-worker-node-2
+        hostname: spark-worker-2
+        build:
+            context : .
+            dockerfile : worker.Dockerfile 
+        environment:
+            - SPARK_LOCAL_IP=spark-worker-2
+            - SPARK_WORKER_WEBUI_PORT=8082
+        ports:
+            - 8082:8082      
+        depends_on:
+            - spark-master        

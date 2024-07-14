@@ -18,7 +18,5 @@ COPY spark-defaults.conf "$SPARK_HOME/conf"
 
 ENV PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin:$HADOOP_HOME
 ENV PYSPARK_PYTHON=/usr/bin/python3
-ENV SPARK_MASTER="spark://spark-master:7077"
-ENV SPARK_MASTER_HOST spark-master
-ENV SPARK_MASTER_PORT 7077
-ENTRYPOINT ["start-worker.sh","spark://spark-master:7077"]
+ENV SPARK_WORKER_LOG=/opt/spark/logs/spark-worker.out
+CMD start-worker.sh spark://spark-master:7077 ;sleep infinity

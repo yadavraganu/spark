@@ -1,5 +1,5 @@
 FROM redhat/ubi8
-RUN mkdir -p /opt/hadoop/ && mkdir -p /opt/spark/
+RUN mkdir -p /opt/hadoop/ && mkdir -p /opt/spark/spark-events
 
 RUN yum -y install wget procps rsync curl sudo openssh-clients java-1.8.0-openjdk python3
 RUN wget https://downloads.apache.org/spark/spark-3.5.1/spark-3.5.1-bin-hadoop3-scala2.13.tgz
@@ -18,6 +18,5 @@ COPY spark-defaults.conf "$SPARK_HOME/conf"
 
 ENV PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin:$HADOOP_HOME
 ENV PYSPARK_PYTHON=/usr/bin/python3
-ENV ENV SPARK_LOG_DIR=/opt/spark/logs
-ENV SPARK_MASTER_LOG=/opt/spark/logs/spark-master.out
-CMD start-master.sh ;sleep infinity
+ENV SPARK_WORKER_LOG=/opt/spark/logs/spark-worker.out
+CMD start-history-server.sh ;sleep infinity

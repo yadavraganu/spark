@@ -39,4 +39,20 @@ services:
         ports:
             - 8082:8082      
         depends_on:
+            - spark-master
+    spark-history-node :
+        container_name: spark-history-node
+        hostname: spark-history
+        build:
+            context : .
+            dockerfile : historyServer.Dockerfile 
+        ports:
+            - 18080:18080      
+        depends_on:
             - spark-master        
+    jupyter:
+        build:
+            context : .
+            dockerfile : jupyter.Dockerfile 
+        ports:
+         - 8888:8888      

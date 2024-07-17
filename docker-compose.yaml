@@ -9,6 +9,9 @@ services:
         ports:
             - 8080:8080
             - 7077:7077
+        volumes:
+            - spark-logs:/opt/spark/spark-events
+            - ./workspace:/opt/hadoop/    
         environment:
             - SPARK_LOCAL_IP=spark-master
             - SPARK_MASTER_HOST=spark-master
@@ -24,7 +27,10 @@ services:
             - SPARK_LOCAL_IP=spark-worker-1
             - SPARK_WORKER_WEBUI_PORT=8081
         ports:
-            - 8081:8081   
+            - 8081:8081 
+        volumes:
+            - spark-logs:/opt/spark/spark-events
+            - ./workspace:/opt/hadoop/     
         depends_on:
             - spark-master
     spark-worker-2 :
@@ -38,6 +44,9 @@ services:
             - SPARK_WORKER_WEBUI_PORT=8082
         ports:
             - 8082:8082      
+        volumes:
+            - spark-logs:/opt/spark/spark-events 
+            - ./workspace:/opt/hadoop/  
         depends_on:
             - spark-master
     spark-history-node :
@@ -47,7 +56,10 @@ services:
             context : .
             dockerfile : historyServer.Dockerfile 
         ports:
-            - 18080:18080      
+            - 18080:18080 
+        volumes:
+            - spark-logs:/opt/spark/spark-events  
+            - ./workspace:/opt/hadoop/      
         depends_on:
             - spark-master        
     jupyter:
@@ -55,4 +67,9 @@ services:
             context : .
             dockerfile : jupyter.Dockerfile 
         ports:
-         - 8888:8888      
+         - 8888:8888
+        volumes: 
+         - ./workspace:/opt/hadoop/        
+volumes:
+    spark-logs:
+    

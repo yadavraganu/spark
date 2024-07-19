@@ -74,3 +74,15 @@ Assume we want to rename the RateCodeDesc column to a more descriptive RateCodeD
 %sql
 ALTER TABLE taxidb.taxiratecode RENAME COLUMN RateCodeDesc to RateCodeDescription
 ```
+### Replacing the Table Columns
+In Delta Lake, the ALTER TABLE REPLACE COLUMNS command can be used to replace all the columns of an existing Delta table with a new set of columns. Note that in order to do this, you need to enable Delta Lake column mapping.
+```
+%sql
+ALTER TABLE taxidb.TaxiRateCode
+REPLACE COLUMNS (
+ Rate_Code_Identifier INT COMMENT 'Identifies the code',
+ Rate_Code_Description STRING COMMENT 'Describes the code',
+ Rate_Code_Percentage INT COMMENT 'Tax percentage applied'
+)
+```
+It’s important to note that the REPLACE COLUMNS operation can be a destructive operation, as it replaces the entire schema of the Delta table and rewrites the data in the new schema. Therefore, you should use it with caution and make sure to back up your data before applying this operation.

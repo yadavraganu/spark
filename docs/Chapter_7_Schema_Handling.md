@@ -19,3 +19,58 @@ The source DataFrame to be written:
     To simlify above complexity, Delta Lake will not allow column names that only differ in case
 
 # Schema Evolution
+Schema evolution allows us to add, remove, or modify columns in an existing Delta table without losing any data.  
+Schema evolution is enabled on the table level by using __.option("mergeSchema","true")__ during a write operation.  
+You can also enable schema evolution for the entire Spark cluster by setting __spark.databricks.delta.schema.autoMerge.enabled__ to true.
+
+When schema evolution is enabled, the following rules are applied:
+- If a column exists in the source DataFrame being written but not in the Delta table, a new column is added to the Delta table with the same name and data
+type. All existing rows will have a null value for the new column.
+- If a column exists in the Delta table but not in the source DataFrame being written, the column is not changed and retains its existing values. The new records will have a null value for the missing columns in the source DataFrame.
+- If a column with the same name but a different data type exists in the Delta table, Delta Lake attempts to convert the data to the new data type. If the conversion fails, an error is thrown.
+- If a NullType column is added to the Delta table, all existing rows are set to null for that column
+
+# Explicit Schema Updates
+### Adding a Column to a Table
+```
+%sql
+ALTER TABLE delta.`/mnt/datalake/book/chapter07/TaxiRateCode` ADD COLUMN RateCodeTaxPercent INT AFTER RateCodeId
+```
+We used the AFTER keyword, so the column will be added after the RateCodeId field, and not at the end of the column list, as is the standard practice without the AFTER keyword. Similarly, we can use the FIRST keyword to add the new column at the first position in the column list.
+### Adding Comments to a Column
+```
+%sql
+ALTER TABLE taxidb.TaxiRateCode
+ALTER COLUMN RateCodeId COMMENT 'This is the id of the Ride'
+```
+### Changing Column Ordering
+```
+%sql
+ALTER TABLE taxidb.TaxiRateCode ALTER COLUMN RateCodeDesc AFTER RateCodeId
+```
+By default, Delta Lake collects statistics on only the first 32 columns. Therefore, if there is a specific column that we would like to have included in the statistics, we might want to move that column in the column order.
+
+### Delta Lake Column Mapping
+Column mapping allows Delta Lake tables and the underlying Parquet file columns to use different names. This enables Delta Lake schema evolution such as __RENAME COLUMN__ and __DROP COLUMN__ on a Delta Lake table without the need to rewrite the underlying Parquet files.  
+You can enable column mapping by setting __delta.columnmapping.mode__ to name
+```
+%sql
+ ALTER TABLE taxidb.TaxiRateCode SET TBLPROPERTIES (
+ 'delta.minReaderVersion' = '2',
+ 'delta.minWriterVersion' = '5',
+ 'delta.columnMapping.mode' = 'name'
+ )
+```
+For each column, you have:
+- The name, which is the official Delta Lake column name (e.g., RateCodeId).
+- delta.columnMapping.id, which is the ID of the column. This ID will remain stable.
+- delta.columnMapping.physicalName, which is the physical name in the Parquet file
+
+### Renaming a Column
+You can use ALTER TABLE...RENAME COLUMN to rename a column without rewriting any of the column’s existing data. Note that column mapping needs to be in place for
+this to be enabled.  
+Assume we want to rename the RateCodeDesc column to a more descriptive RateCodeDescription:
+```
+%sql
+ALTER TABLE taxidb.taxiratecode RENAME COLUMN RateCodeDesc to RateCodeDescription
+```

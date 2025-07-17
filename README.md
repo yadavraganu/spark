@@ -7,7 +7,7 @@
 | 3  | `{"name": "Charlie", "city": "PAR", "preferences": {"theme": "dark"}}` |
 
 -----
-### 1\. `from_json(col, schema, options=None)`
+#### 1\. `from_json(col, schema, options=None)`
   * **Description:** Parses a **JSON string column** into a **structured column** (e.g., `StructType`, `MapType`, or `ArrayType`). It needs a predefined schema to understand the JSON's structure and data types. This is the most common way to get your JSON into a strongly-typed DataFrame.
   * **Input DataFrame:**
     | id | json\_data\_string |

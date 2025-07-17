@@ -34,7 +34,7 @@
     | 2  | `{"name": "Bob", "age": null, "city": "LDN", "tags": [], "preferences": null}` |
     | 3  | `{"name": "Charlie", "age": null, "city": "PAR", "tags": null, "preferences": {"theme": "dark"}}` |
 -----
-### 2\. `to_json(col, options=None)`
+#### 2\. `to_json(col, options=None)`
   * **Description:** Converts a **structured PySpark column** (like a `StructType`, `MapType`, or `ArrayType`) back into a **JSON string**. This is useful for exporting data or re-serializing processed information.
   * **Input DataFrame (Conceptual, assuming `parsed_data` column from `from_json`):**
     | id | parsed\_data |
@@ -47,7 +47,7 @@
     | 1  | `{"name":"Alice","age":30,"city":"NY","tags":["premium","active"],"preferences":null}` |
     | 2  | `{"name":"Bob","age":null,"city":"LDN","tags":[],"preferences":null}` |
 -----
-### 3\. `get_json_object(col, path)`
+#### 3\. `get_json_object(col, path)`
   * **Description:** Extracts a specific JSON object or **scalar value** from a JSON string using a **JSONPath expression** (e.g., `$.name`, `$.address.street`). The output is ***always*** a `StringType`, regardless of the original JSON type.
   * **Input DataFrame:**
     | id | json\_data\_string |
@@ -62,7 +62,7 @@
     | Bob       | null       |
     | Charlie   | dark       |
 -----
-### 4\. `json_tuple(col, *fields)`
+#### 4\. `json_tuple(col, *fields)`
   * **Description:** Extracts multiple ***top-level*** fields from a JSON string column, creating new columns for each. It's similar to `get_json_object` but more concise for several top-level extractions. The output is ***always*** a `StringType`.
   * **Input DataFrame:**
     | id | json\_data\_string |
@@ -77,7 +77,7 @@
     | Bob       | LDN       |
     | Charlie   | PAR       |
 -----
-### 5\. `schema_of_json(json_string_literal, options=None)`
+#### 5\. `schema_of_json(json_string_literal, options=None)`
   * **Description:** Infers the schema (structure and data types) of a JSON string ***literal*** (not a DataFrame column). It returns the schema in DDL (Data Definition Language) format. This is a utility function, primarily for schema discovery.
   * **Input (Conceptual):** A Python string containing JSON.
     ```python
